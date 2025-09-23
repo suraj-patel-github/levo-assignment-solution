@@ -38,8 +38,8 @@ Understanding till now:
     "levo import --spec ./openapi.yaml --application ShoppingApp"
         (no --service), the schema is versioned at the application level.
 
-    Summary :- 
-    The CLI provides a local OpenAPI file (--spec), identifies where it belongs (--application, optionally --service), and our backend stores and versions it. Later, when tests are run (levo test), our backend must serve back the latest correct schema for that app/service pair.
+Summary: 
+The CLI provides a local OpenAPI file (--spec), identifies where it belongs (--application, optionally --service), and our backend stores and versions it. Later, when tests are run (levo test), our backend must serve back the latest correct schema for that app/service pair.
 
 
 sql table -> CREATE TABLE schemas (
