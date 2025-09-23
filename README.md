@@ -51,3 +51,15 @@ sql table -> CREATE TABLE schemas (
     created_at TIMESTAMP DEFAULT now()
 );
  
+
+
+-----------------------------------------------
+curl to hit the upload API -
+For local -> 
+    curl -X POST "http://localhost:8080/upload?application=ShopApp&service=Orders" \
+        -F "file=@/Users/surajpatel/Documents/Projects/go/levo-assignment-solution/openapi.yaml"
+    
+    if running in container -> 
+    curl -X POST "http://localhost:8080/upload?application=ShopApp&service=Orders" \
+        -F "file=@openapi.yaml"
+

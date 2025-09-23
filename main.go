@@ -15,8 +15,11 @@ import (
 )
 
 func main() {
-	dsn := os.Getenv("DB_DSN") // e.g. postgres://user:pass@localhost:5432/schema_db?sslmode=disable
-	db, err := sql.Open("postgres", dsn)
+	dbString := os.Getenv("POSTGRES_CONNECTION_STRING")
+	if dbString == "" {
+		log.Fatal("DB connection is not provided")
+	}
+	db, err := sql.Open("postgres", dbString)
 	if err != nil {
 		log.Fatal(err)
 	}
