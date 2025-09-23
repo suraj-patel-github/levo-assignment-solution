@@ -6,7 +6,7 @@ import (
     "net/http"
     "strconv"
 
-    "schema-versioner/pkg/service"
+    "levo-schema-service/pkg/service"
 )
 
 func UploadHandler(svc service.SchemaService) http.HandlerFunc {
