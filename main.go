@@ -34,6 +34,6 @@ func main() {
 	mux.Handle("/latest", transport.LatestHandler(svc))
 	mux.Handle("/version", transport.VersionHandler(svc))
 
-	log.Println("Schema Versioner API running on :8080")
+	log.Println("Schema Specs Validation API on :8080")
 	log.Fatal(http.ListenAndServe(":8080", mux))
 }

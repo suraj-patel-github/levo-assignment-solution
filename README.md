@@ -1,48 +1,15 @@
-# levo-assignment-solution
-LEVO has built a CLI tool that can run in developers' laptops as well as in CI/CD pipelines. This CLI focus is around testing API by analyzing the schema and executing different kinds of conformance and security test suites.
+# Schema Specs Validation API
 
-Its purpose is to let a CLI tool (like the example levo commands) upload API schemas and later fetch them for testing or review.
+A Go service to upload, validate, version, and retrieve OpenAPI specifications (JSON or YAML).
 
-In other words, we are creating a versioned store of API specs so that:
-    1. We can upload a new OpenAPI file whenever their API changes.
-    2. The system validates and keeps track of every version.
-    3. Anyone can retrieve the latest or any previous version at any time.
+## Prerequisites
+- **Go 1.22.5 or later**
+- **PostgreSQL** (or a compatible Postgres service such as Neon)
+- An existing database with a `schemas` table.
 
-What We’re Doing to Reach That Goal
-1. Accept Schema Uploads
-    Build an API endpoint that receives OpenAPI files (JSON or YAML).
-    Validate that each file is a proper OpenAPI specification.
-
-2. Versioning & Storage
-    Each upload for a given application/service gets a new version number.
-    Old versions are never lost—so you can roll back or compare history.
-    Metadata (application, service, version, timestamps) goes in a database.
-    The actual files are saved to the filesystem.
-
-3. Retrieval Endpoints
-    Provide endpoints to fetch:
-        The latest schema for a given application/service.
-        A specific older version by version number.
-
-4. Clean, Testable Implementation
-    Organize the Go project with clear layers (repository, service, transport).
-    Include unit tests and a README showing how to run and use it.
-
-Understanding till now:
-    levo import
-    "levo import --spec ./openapi.yaml --application app --service Orders"
-        the CLI:
-        Reads the local openapi.yaml file.
-        Calls our SaaS backend API (the service you are building eg:- orders) to upload that schema.
-        Stores it under application "app" and service "Orders", creating a new version.
-    "levo import --spec ./openapi.yaml --application ShoppingApp"
-        (no --service), the schema is versioned at the application level.
-
-Summary: 
-The CLI provides a local OpenAPI file (--spec), identifies where it belongs (--application, optionally --service), and our backend stores and versions it. Later, when tests are run (levo test), our backend must serve back the latest correct schema for that app/service pair.
-
-
-sql table -> CREATE TABLE schemas (
+SQL for the table:
+```sql
+CREATE TABLE schemas (
     id SERIAL PRIMARY KEY,
     application TEXT NOT NULL,
     service TEXT,
@@ -50,16 +17,86 @@ sql table -> CREATE TABLE schemas (
     file_path TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT now()
 );
- 
+```
 
+## Setup Instructions
 
------------------------------------------------
-curl to hit the upload API -
-For local -> 
-    curl -X POST "http://localhost:8080/upload?application=ShopApp&service=Orders" \
-        -F "file=@/Users/surajpatel/Documents/Projects/go/levo-assignment-solution/openapi.yaml"
-    
-    if running in container -> 
-    curl -X POST "http://localhost:8080/upload?application=ShopApp&service=Orders" \
-        -F "file=@openapi.yaml"
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/suraj-patel-github/levo-assignment-solution.git
+   cd levo-assignment-solution
+   ```
 
+2. **Install Go dependencies**
+   ```bash
+   go mod tidy
+   ```
+
+3. **Set the database connection string**
+   Set an environment variable that matches what the code expects.  
+   By default the code uses `POSTGRES_CONNECTION_STRING`:
+
+   **Linux / macOS (bash/zsh)**
+   ```bash
+   export POSTGRES_CONNECTION_STRING="postgresql://USER:PASSWORD@HOST:PORT/DATABASE?sslmode=require"
+   ```
+
+   **Windows PowerShell**
+   ```powershell
+   setx POSTGRES_CONNECTION_STRING "postgresql://USER:PASSWORD@HOST:PORT/DATABASE?sslmode=require"
+   ```
+
+   Example using Neon where I have tested this repo in .env:
+   ```
+   "POSTGRES_CONNECTION_STRING": "postgresql://neondb_owner:npg_SQ8lJKox4VOp@ep-lingering-math-a1x785tj-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+   ```
+
+4. **Run the application**
+   main file is at the project root so:
+   ```bash
+   go run main.go
+   ```
+
+5. **Verify the server is running**
+   You should see:
+   ```
+   Schema Specs Validation API on :8080
+   ```
+
+## API Endpoints
+
+### Upload Schema
+Upload and version an OpenAPI file.
+
+```bash
+curl -X POST "http://localhost:8080/upload?application=ShopApp&service=Orders"      -F "file=@openapi.yaml"
+```
+- `application` – required
+- `service` – optional (omit for application-level schema)
+
+### Get Latest Schema
+```bash
+curl "http://localhost:8080/latest?application=ShopApp&service=Orders"
+```
+
+### Get Specific Version
+```bash
+curl "http://localhost:8080/version?application=ShopApp&service=Orders&version=1"
+```
+In the positive tests you will see the json.
+
+## Notes
+- The service validates OpenAPI specs using the [kin-openapi](https://github.com/getkin/kin-openapi) library.
+- Uploaded files are saved under `./uploads/<application>/<service>/v<version>-filename`.
+
+## Testing Invalid Upload
+Create an invalid file to see validation in action:
+```bash
+echo "not a valid openapi" > bad.yaml
+curl -X POST "http://localhost:8080/upload?application=ShopApp" -F "file=@bad.yaml"
+```
+
+You should receive a 400 response.
+In terminal you will see error.
+
+---
