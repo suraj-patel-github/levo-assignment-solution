@@ -48,7 +48,7 @@ CREATE TABLE schemas (
 
    Example using Neon where I have tested this repo in .env:
    ```
-   "POSTGRES_CONNECTION_STRING": "postgresql://neondb_owner:npg_SQ8lJKox4VOp@ep-lingering-math-a1x785tj-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+   "POSTGRES_CONNECTION_STRING": "postgresql://neondb_owner:<PASSWORD>@ep-lingering-math-a1x785tj-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
    ```
 
 4. **Run the application**
